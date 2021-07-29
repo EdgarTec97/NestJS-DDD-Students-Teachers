@@ -1,3 +1,11 @@
+## Description
+
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.7
+
+This is a NestJS project that uses a hexagonal architecture, DDD: Domain Driven Design, TDD: Test Driven Design, Mikro ORM as ORM for the database in MongoDB and Swagger to document all the endpoints.
+
+## Docker
+
 You must have docker and docker-compose installed on your computer
 
 from the root of the project execute the following commands in order
@@ -13,10 +21,6 @@ db.getSiblingDB('challenge').createUser({user: 'root', pwd: 'root', roles: [{rol
 wait 5-10 seconds
 
 that's for user creation, after that you can already quit the bash and use the API
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Installation
 
