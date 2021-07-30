@@ -12,23 +12,15 @@ from the root of the project execute the following commands in order
 
 docker-compose up -d --build
 
-docker exec -it mongodb bash
-
-mongo -u root -p root
-
-db.getSiblingDB('challenge').createUser({user: 'root', pwd: 'root', roles: [{role: 'dbAdmin', db: 'challenge'},{role: 'dbOwner', db: 'challenge'},{role: 'userAdmin', db: 'challenge'}], mechanisms:[ "SCRAM-SHA-1"] });
-
-wait 5-10 seconds
-
 that's for user creation, after that you can already quit the bash and use the API
 
-## Installation
+## Installation witouht docker
 
 ```bash
 $ yarn install
 ```
 
-## Running the app
+## Running the app witouht docker
 
 ```bash
 # development

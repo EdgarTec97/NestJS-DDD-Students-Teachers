@@ -14,7 +14,7 @@ import { MikroOrmSwitcherModule } from './utils/mikro-orm-switcher.module';
     StudentsPerTeacherModule,
     AuthModule,
     JwtServiceModule,
-    /*MongooseModule.forRoot('mongodb://root:root@localhost:27017/challenge',{
+    /*MongooseModule.forRoot('mongodb://root:root@mongodb:27017/challenge',{
       autoCreate: true
     }),*/
     MikroOrmSwitcherModule.init({

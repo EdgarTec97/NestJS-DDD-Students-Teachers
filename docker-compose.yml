@@ -1,4 +1,7 @@
-version: '3.3'
+version: '3.9'
+
+networks:
+    nesjs-network:
 
 services:
 
@@ -6,6 +9,8 @@ services:
     image: mongo
     container_name: mongodb
     restart: unless-stopped
+    networks:
+      - nesjs-network
     environment:
        MONGO_INITDB_ROOT_USERNAME: root
        MONGO_INITDB_ROOT_PASSWORD: root
@@ -18,3 +23,23 @@ services:
     volumes:
       -  ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo-js:ro
       - ./mongo-volume:/data/db
+  
+  app:
+    build: 
+      context: .
+      target: production
+      dockerfile: Dockerfile
+    container_name: students
+    restart: unless-stopped
+    command: yarn start:prod
+    networks:
+      - nesjs-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "4000:4000"  
+    links:
+      - mongodb 
+    depends_on: 
+      - mongodb

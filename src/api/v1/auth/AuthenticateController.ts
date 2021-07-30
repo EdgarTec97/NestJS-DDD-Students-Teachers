@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post } from "@nestjs/common";
 import { ApiQuery } from "@nestjs/swagger";
 import { Authenticate } from "../../../transactions/auth/use-cases/authenticate";
 import { DocumentationTags, Endpoint } from "../../../utils/Endpoint";

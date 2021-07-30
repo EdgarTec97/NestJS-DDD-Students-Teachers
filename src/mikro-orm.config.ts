@@ -5,7 +5,7 @@ import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
 
 const mikroOrmMongoConfig: Options<MongoDriver> = {
     type: 'mongo',
-    clientUrl: 'mongodb://root:root@localhost:27017',
+    clientUrl: 'mongodb://root:root@mongodb:27017',
     dbName: 'challenge',
     entities: [],
     discovery: {warnWhenNoEntities: false},

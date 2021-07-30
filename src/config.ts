@@ -2,11 +2,11 @@ export const config = {
   testModeEnabled: process.env.NODE_ENV === 'test',
   forceEnableMikroORMRepositories: process.env.ENABLE_TEST_MIKRO_ORM_REPOSITORIES === 'true',
   database: {
-    host: process.env.DATABASE_HOST || 'localhost',
-    port: parseInt(process.env.DATABASE_PORT || '5432'),
-    username: process.env.DATABASE_USERNAME || 'rabbit',
-    password: process.env.DATABASE_PASSWORD || 'password',
-    database: process.env.DATABASE_DATABASE || 'rabbit',
+    host: process.env.DATABASE_HOST || 'mongodb',
+    port: parseInt(process.env.DATABASE_PORT || '27017'),
+    username: process.env.DATABASE_USERNAME || 'root',
+    password: process.env.DATABASE_PASSWORD || 'root',
+    database: process.env.DATABASE_DATABASE || 'challenge',
   },
   aws: {
     region: process.env.AWS_REGION || 'us-east-2',
