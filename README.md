@@ -10,8 +10,10 @@ You must have docker and docker-compose installed on your computer
 
 from the root of the project execute the following commands in order
 
-docker-compose up -d --build
-
+```bash
+# install the necessary dependencies to generate the dist folder and run the containers
+yarn  up
+```
 that's for user creation, after that you can already quit the bash and use the API
 
 ## Installation witouht docker
