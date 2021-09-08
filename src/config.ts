@@ -1,8 +1,9 @@
 export const config = {
   testModeEnabled: process.env.NODE_ENV === 'test',
-  forceEnableMikroORMRepositories: process.env.ENABLE_TEST_MIKRO_ORM_REPOSITORIES === 'true',
+  forceEnableMikroORMRepositories:
+    process.env.ENABLE_TEST_MIKRO_ORM_REPOSITORIES === 'true',
   database: {
-    host: process.env.DATABASE_HOST || 'mongodb',
+    host: process.env.DATABASE_HOST || 'localhost',
     port: parseInt(process.env.DATABASE_PORT || '27017'),
     username: process.env.DATABASE_USERNAME || 'root',
     password: process.env.DATABASE_PASSWORD || 'root',
@@ -21,9 +22,11 @@ export const config = {
     baseURL: process.env.NOTIFICATIONS_SERVICE_BASE_URL || 'http://localhost',
     port: parseInt(process.env.NOTIFICATIONS_SERVICE_PORT || '3001'),
     passwordResetLinkUrl:
-      process.env.PASSWORD_RESET_LINK_URL || 'https://rabbitmx.com/accounts/password-reset/',
+      process.env.PASSWORD_RESET_LINK_URL ||
+      'https://rabbitmx.com/accounts/password-reset/',
     emailValidationUrl:
-      process.env.EMAIL_VALIDATION_URL || 'https://rabbitmx.com/accounts/email-validation/',
+      process.env.EMAIL_VALIDATION_URL ||
+      'https://rabbitmx.com/accounts/email-validation/',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'RabbitSecret',

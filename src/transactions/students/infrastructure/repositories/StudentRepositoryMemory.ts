@@ -1,84 +1,78 @@
-import { HttpStatus, Injectable } from "@nestjs/common";
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
-import { FindStudentsResponseDTO, StudentDTO } from "../../../../api/v1/students/dto/student.dto";
-import { StudentRepository } from "../../domain/StudentRepository";
-import { students } from "src/db";
+import {
+  FindStudentsResponseDTO,
+  StudentDTO,
+} from '../../../../api/v1/students/dtos/student.dto';
+import { StudentRepository } from '../../domain/StudentRepository';
+import { students } from 'src/db';
+import { Student, StudentPrimitives } from '../../domain/Student';
+import { StudentValueId } from '../../../shared/domain/ids/StudentValueId';
+import { Paginated } from '../../../shared/utils/hex/Paginated';
 
 @Injectable()
-export class StudentRepositoryMemory implements StudentRepository{
-    private students = students;
-    
-    async getStudents(): Promise<FindStudentsResponseDTO[] | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            return await this.students;
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-    }
+export class StudentRepositoryMemory implements StudentRepository {
+  private students = students;
 
-    async getStudentById(studentId: string): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            return await this.students.find(student => student.id === studentId);
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-    }
-    
-    async createStudent(payload: StudentDTO): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            let newStudent = {
-                id: uuid(),
-                ...payload
-            }
-            await this.students.push(newStudent);
-            return newStudent;
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-    }
+  async getStudents(
+    numberOfItems: number,
+    offset: number,
+  ): Promise<Paginated<Student>> {
+    return new Paginated<Student>(
+      students.map(Student.fromPrimitives),
+      offset,
+      numberOfItems,
+      students.length,
+    );
+  }
 
-    async updateStudent(payload: StudentDTO, studentId: string): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            let updatedStudent: FindStudentsResponseDTO;
-            const updatedStudentList = await this.students.map(student => {
-                if(student.id == studentId){
-                    updatedStudent = {
-                        id: studentId,
-                        ...payload
-                    }
-                    return updatedStudent;
-                }else{
-                    return student;
-                }
-            });
-            this.students = updatedStudentList;
-            return updatedStudent;
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-    }
+  async getStudentById(
+    studentId: StudentValueId,
+  ): Promise<Student | undefined> {
+    const student = (await this.students.find(
+      (student) => student.id === studentId.getValue(),
+    )) as StudentPrimitives;
+    return Student.fromPrimitives(student);
+  }
 
-    async deleteStudent(studentId: string): Promise<string | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            let i = 0;
-            this.students.forEach( (item, index) => {
-                if(item.id === studentId){
-                    this.students.splice(index,1);
-                    i++;
-                }
-            });
-            if(i == 0){
-                return 'No se eliminó ningun estudiante';
-            }else{
-                return 'Se eliminó con exito el estudiante';
-            }
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
+  async createStudent(student: Student): Promise<void> {
+    const studentEntity = student.toPrimitives();
+    delete studentEntity.id;
+    let newStudent = {
+      id: uuid(),
+      ...studentEntity,
+    };
+    await this.students.push(newStudent);
+  }
+
+  async updateStudent(payload: Student): Promise<Student> {
+    const studentEntity = payload.toPrimitives();
+    let updatedStudent: any;
+    const updatedStudentList = await this.students.map((student) => {
+      if (student.id == studentEntity.id) {
+        updatedStudent = {
+          id: studentEntity.id,
+          ...studentEntity,
+        };
+        return updatedStudent;
+      } else {
+        return student;
+      }
+    });
+    this.students = updatedStudentList;
+    return updatedStudent;
+  }
+
+  async deleteStudent(studentId: StudentValueId): Promise<void> {
+    let i = 0;
+    this.students.forEach((item, index) => {
+      if (item.id === studentId.getValue()) {
+        this.students.splice(index, 1);
+        i++;
+      }
+    });
+    if (i == 0) {
+      throw new NotFoundException('No se a encontrado el estudiante');
     }
+  }
 }

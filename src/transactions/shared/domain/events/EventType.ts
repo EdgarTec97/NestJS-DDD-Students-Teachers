@@ -1,0 +1,3 @@
+export enum EventType {
+  ACCOUNT_REGISTERED = 'ACCOUNT_REGISTERED',
+}

@@ -18,8 +18,8 @@ import { MikroOrmSwitcherModule } from './utils/mikro-orm-switcher.module';
       autoCreate: true
     }),*/
     MikroOrmSwitcherModule.init({
-      disable: false
-    })
+      disable: false,
+    }),
   ],
   providers: [],
 })
