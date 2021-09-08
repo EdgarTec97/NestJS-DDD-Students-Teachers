@@ -7,6 +7,9 @@ import {
   Put,
 } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
+import { StudentValueId } from '../../../transactions/shared/domain/ids/StudentValueId';
+import { TeacherValueId } from '../../../transactions/shared/domain/ids/TeacherValueId';
+import { Student } from '../../../transactions/students/domain/Student';
 import { StudentsPerTeacher } from '../../../transactions/studentsPerTeacher/use-cases/Students-per-teacher';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
 import { FindStudentsResponseDTO } from '../students/dtos/student.dto';
@@ -34,7 +37,12 @@ export class StudentsPerTeacherController {
   async execute(
     @Param('studentId') studentId: string,
     @Param('teacherId') teacherId: string,
-  ): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-    return await this.studentsPerTeacher.execute(studentId, teacherId);
+  ): Promise<FindStudentsResponseDTO> {
+    const student: Student = await this.studentsPerTeacher.execute(
+      StudentValueId.fromString(studentId),
+      TeacherValueId.fromString(teacherId),
+    );
+
+    return FindStudentsResponseDTO.fromDomain(student);
   }
 }

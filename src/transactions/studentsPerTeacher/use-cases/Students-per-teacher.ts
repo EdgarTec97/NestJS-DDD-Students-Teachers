@@ -1,5 +1,7 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { FindStudentsResponseDTO } from '../../../api/v1/students/dtos/student.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { StudentValueId } from '../../shared/domain/ids/StudentValueId';
+import { TeacherValueId } from '../../shared/domain/ids/TeacherValueId';
+import { Student } from '../../students/domain/Student';
 import {
   StudentsPerTeacherRepository,
   STUDENTS_PER_TEACHER_REPOSITORY_TOKEN,
@@ -12,9 +14,9 @@ export class StudentsPerTeacher {
     private studentPerTeacherRepository: StudentsPerTeacherRepository,
   ) {}
   async execute(
-    studentId: string,
-    teacherId: string,
-  ): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
+    studentId: StudentValueId,
+    teacherId: TeacherValueId,
+  ): Promise<Student> {
     return await this.studentPerTeacherRepository.changeStudentsPerTeacherRepository(
       studentId,
       teacherId,
