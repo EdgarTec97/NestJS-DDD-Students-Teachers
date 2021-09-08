@@ -9,20 +9,32 @@ async function bootstrap() {
   app.enableCors();
 
   const options = new DocumentBuilder()
-  .setTitle('Students - Teachers')
-  .setDescription('This project is a hands-on on how you can use hex architecture, DDD: Domain Driven Design and TDD: Test Driven Development in your future backend applications')
-  .setVersion('1.0')
-  .addBearerAuth(
-    { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Student JWT' },
-    DocumentationRoles.STUDENT_JWT
-  )
-  .addBearerAuth(
-    { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Manager JWT' },
-    DocumentationRoles.MANAGER_JWT
-  )
-  .build();
+    .setTitle('Students - Teachers')
+    .setDescription(
+      'This project is a hands-on on how you can use hex architecture, DDD: Domain Driven Design and TDD: Test Driven Development in your future backend applications',
+    )
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Student JWT',
+      },
+      DocumentationRoles.STUDENT_JWT,
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Manager JWT',
+      },
+      DocumentationRoles.MANAGER_JWT,
+    )
+    .build();
 
-  const document = SwaggerModule.createDocument(app,options);
+  const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
 
   await app.listen(config.port);

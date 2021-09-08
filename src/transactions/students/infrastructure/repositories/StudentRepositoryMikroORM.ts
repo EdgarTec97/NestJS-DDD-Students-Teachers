@@ -1,91 +1,134 @@
-import { MikroORM } from "@mikro-orm/core";
-import { MongoConnection, MongoDriver, ObjectId } from "@mikro-orm/mongodb";
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { MikroORM } from '@mikro-orm/core';
+import { MongoConnection, MongoDriver, ObjectId } from '@mikro-orm/mongodb';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { FindStudentsResponseDTO, StudentDTO } from "../../../../api/v1/students/dto/student.dto";
-import { MIKRO_ORM_MONGODB_TOKEN } from "../../../../utils/mikro-orm-switcher.module";
-import { StudentRepository } from "../../domain/StudentRepository";
+import { MIKRO_ORM_MONGODB_TOKEN } from '../../../../utils/mikro-orm-switcher.module';
+import { StudentValueId } from '../../../shared/domain/ids/StudentValueId';
+import { Paginated } from '../../../shared/utils/hex/Paginated';
+import { Student, StudentPrimitives } from '../../domain/Student';
+import { StudentRepository } from '../../domain/StudentRepository';
 
 @Injectable()
-export class StudentRepositoryMikroORM implements StudentRepository{
-    private connection: MongoConnection;
+export class StudentRepositoryMikroORM implements StudentRepository {
+  private connection: MongoConnection;
 
-    constructor(@Inject(MIKRO_ORM_MONGODB_TOKEN) private readonly orm: MikroORM<MongoDriver>){
-        this.connection = this.orm.em.getDriver().getConnection();
-    }
-    async getStudents(): Promise<FindStudentsResponseDTO[] | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            const result = (await this.connection.find('students',{}) as FindStudentsResponseDTO[]);
-            return result;
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-    }
+  constructor(
+    @Inject(MIKRO_ORM_MONGODB_TOKEN)
+    private readonly orm: MikroORM<MongoDriver>,
+  ) {
+    this.connection = this.orm.em.getDriver().getConnection();
+  }
+  async getStudents(
+    numberOfItems: number,
+    offset: number,
+  ): Promise<Paginated<Student>> {
+    let students = (await this.connection.find(
+      'students',
+      {},
+      {},
+      numberOfItems,
+      offset,
+    )) as StudentPrimitives[];
+    this.fixCorrectId(students);
+    return new Paginated<Student>(
+      students.map(Student.fromPrimitives),
+      offset,
+      numberOfItems,
+      students.length,
+    );
+  }
 
-    async getStudentById(studentId: string): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            const result = await this.connection.getCollection('students').findOne(new ObjectId(studentId));
-            return result;
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
+  async getStudentById(
+    studentId: StudentValueId,
+  ): Promise<Student | undefined> {
+    const student = (await this.connection
+      .getCollection('students')
+      .findOne(new ObjectId(studentId.getValue()))) as StudentPrimitives;
+    if (!student) {
+      throw new NotFoundException('No se a encontrado el estudiante');
     }
-    
-    async createStudent(payload: StudentDTO): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            const {email,password} = payload;
-            const user = await this.connection.getCollection('students').findOne({email});
-            if(user){
-                throw new HttpException('User Already exist',HttpStatus.BAD_REQUEST);
-            }
-            payload.password = await bcrypt.hash(password, 10);
-            const result = await this.connection.insertOne('students',{ _id: null, ...payload});
-            return (result['row'] as FindStudentsResponseDTO);
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-    }
+    this.fixCorrectId([student]);
+    return Student.fromPrimitives(student);
+  }
 
-    async updateStudent(payload: StudentDTO, studentId: string): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR | any> {
-        try {
-            if(payload.password && payload.password !== ''){
-                const {password} = payload;
-                payload.password = await bcrypt.hash(password, 10);
-            }
-            if(payload.email && payload.email !== ''){
-                const {email} = payload;
-                const user = await this.connection.getCollection('students').findOne({email});
-                if(user){
-                    throw new HttpException('User Already exist',HttpStatus.BAD_REQUEST);
-                }
-            }
-            const result = await this.connection.getCollection('students').findOneAndUpdate(
-                { _id: new ObjectId(studentId) }, 
-                { $set: { ...payload } },
-                { returnOriginal: false }
-            );
-            return result['value'];
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
+  async createStudent(student: Student): Promise<void> {
+    const studentEntity = student.toPrimitives();
+    const { email, password } = studentEntity;
+    const user = await this.connection
+      .getCollection('students')
+      .findOne({ email });
+    if (user) {
+      throw new HttpException('User Already exist', HttpStatus.BAD_REQUEST);
     }
+    studentEntity.password = await bcrypt.hash(password, 10);
+    delete studentEntity.id;
+    await this.connection.insertOne('students', {
+      _id: null,
+      ...studentEntity,
+    });
+  }
 
-    async deleteStudent(studentId: string): Promise<string | HttpStatus.INTERNAL_SERVER_ERROR> {
-        try {
-            const studentDelete = await this.connection.deleteMany('students',{_id:new ObjectId(studentId)});
-            if(studentDelete['affectedRows'] == 0){
-                return 'No se eliminó ningun estudiante';
-            }else{
-                return 'Se eliminó con exito el estudiante';
-            }
-        } catch (error) {
-            console.log(error);
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
+  async updateStudent(payload: Student): Promise<Student> {
+    const student = payload.toPrimitives();
+    if (
+      student.password &&
+      student.password !== '' &&
+      student.password !== null
+    ) {
+      const { password } = student;
+      student.password = await bcrypt.hash(password, 10);
+    } else {
+      delete student.password;
     }
+    if (student.email && student.email !== '' && student.email !== null) {
+      const { email } = student;
+      const user = await this.connection
+        .getCollection('students')
+        .findOne({ email });
+      if (user && user._id != student.id) {
+        throw new HttpException('User Already exist', HttpStatus.BAD_REQUEST);
+      }
+    }
+    const result = await this.connection
+      .getCollection('students')
+      .findOneAndUpdate(
+        { _id: new ObjectId(student.id) },
+        { $set: { ...student } },
+        { returnOriginal: false },
+      );
+    return Student.fromPrimitives(result['value']);
+  }
 
+  async deleteStudent(studentId: StudentValueId): Promise<void> {
+    const studentDelete = await this.connection.deleteMany('students', {
+      _id: new ObjectId(studentId.getValue()),
+    });
+    if (studentDelete['affectedRows'] == 0) {
+      throw new NotFoundException('No se a encontrado el estudiante');
+    }
+  }
+
+  private async fixCorrectId(
+    student: StudentPrimitives[],
+    oldName: string = '_id',
+    newName: string = 'id',
+  ) {
+    student.map((el: StudentPrimitives) => {
+      if (oldName == newName) {
+        return el;
+      }
+      if (el[oldName]) {
+        el[newName] = el[oldName];
+        delete el[oldName];
+      }
+      return el;
+    });
+    return student;
+  }
 }
