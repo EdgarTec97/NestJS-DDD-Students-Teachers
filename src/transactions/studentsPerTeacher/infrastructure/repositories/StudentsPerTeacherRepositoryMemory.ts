@@ -1,7 +1,9 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { FindStudentsResponseDTO } from '../../../../api/v1/students/dtos/student.dto';
+import { Injectable } from '@nestjs/common';
 import { StudentsPerTeacherRepository } from '../../domain/StudentsPerTeacherRepository';
 import { students } from 'src/db';
+import { StudentValueId } from '../../../shared/domain/ids/StudentValueId';
+import { TeacherValueId } from '../../../shared/domain/ids/TeacherValueId';
+import { Student } from '../../../students/domain/Student';
 
 @Injectable()
 export class StudentsPerTeacherRepositoryMemory
@@ -10,27 +12,22 @@ export class StudentsPerTeacherRepositoryMemory
   private students = students;
   constructor() {}
   async changeStudentsPerTeacherRepository(
-    studentId: string,
-    teacherId: string,
-  ): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-    try {
-      let updatedStudent: any;
-      const updatedStudentList = await this.students.map((student) => {
-        if (student.id == studentId) {
-          updatedStudent = {
-            ...student,
-            teacherId: teacherId,
-          };
-          return updatedStudent;
-        } else {
-          return student;
-        }
-      });
-      this.students = updatedStudentList;
-      return updatedStudent;
-    } catch (error) {
-      console.log(error);
-      return HttpStatus.INTERNAL_SERVER_ERROR;
-    }
+    studentId: StudentValueId,
+    teacherId: TeacherValueId,
+  ): Promise<Student> {
+    let updatedStudent: any;
+    const updatedStudentList = await this.students.map((student) => {
+      if (student.id == studentId.getValue()) {
+        updatedStudent = {
+          ...student,
+          teacherId: teacherId.getValue(),
+        };
+        return updatedStudent;
+      } else {
+        return student;
+      }
+    });
+    this.students = updatedStudentList;
+    return updatedStudent;
   }
 }

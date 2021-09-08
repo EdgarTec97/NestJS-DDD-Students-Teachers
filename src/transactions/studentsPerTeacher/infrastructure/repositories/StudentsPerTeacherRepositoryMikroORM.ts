@@ -1,8 +1,10 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoConnection, MongoDriver, ObjectId } from '@mikro-orm/mongodb';
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { FindStudentsResponseDTO } from '../../../../api/v1/students/dtos/student.dto';
+import { Inject, Injectable } from '@nestjs/common';
 import { MIKRO_ORM_MONGODB_TOKEN } from '../../../../utils/mikro-orm-switcher.module';
+import { StudentValueId } from '../../../shared/domain/ids/StudentValueId';
+import { TeacherValueId } from '../../../shared/domain/ids/TeacherValueId';
+import { Student, StudentPrimitives } from '../../../students/domain/Student';
 import { StudentsPerTeacherRepository } from '../../domain/StudentsPerTeacherRepository';
 
 @Injectable()
@@ -17,21 +19,17 @@ export class StudentsPerTeacherRepositoryMikroORM
     this.connection = this.orm.em.getDriver().getConnection();
   }
   async changeStudentsPerTeacherRepository(
-    studentId: string,
-    teacherId: string,
-  ): Promise<FindStudentsResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-    try {
-      const updatedStudent = await this.connection
-        .getCollection('students')
-        .findOneAndUpdate(
-          { _id: new ObjectId(studentId) },
-          { $set: { teacherId: teacherId } },
-          { returnOriginal: false },
-        );
-      return updatedStudent['value'] as FindStudentsResponseDTO;
-    } catch (error) {
-      console.log(error);
-      return HttpStatus.INTERNAL_SERVER_ERROR;
-    }
+    studentId: StudentValueId,
+    teacherId: TeacherValueId,
+  ): Promise<Student> {
+    const updatedStudent = (await this.connection
+      .getCollection('students')
+      .findOneAndUpdate(
+        { _id: new ObjectId(studentId.getValue()) },
+        { $set: { teacherId: teacherId.getValue() } },
+        { returnOriginal: false },
+      )) as StudentPrimitives;
+
+    return Student.fromPrimitives(updatedStudent['value']);
   }
 }
