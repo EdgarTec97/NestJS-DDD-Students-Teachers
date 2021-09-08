@@ -1,8 +1,10 @@
-import { Inject, Injectable, HttpStatus } from '@nestjs/common';
-import {
-  FindTeacherResponseDTO,
-  TeacherDTO,
-} from '../../../api/v1/teachers/dtos/teacher.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { Email } from '../../shared/domain/Email';
+import { TeacherValueId } from '../../shared/domain/ids/TeacherValueId';
+import { Name } from '../../shared/domain/Name';
+import { Password } from '../../shared/domain/Password';
+import { PhoneNumber } from '../../shared/domain/PhoneNumber';
+import { Teacher } from '../domain/Teacher';
 import {
   TeacherRepository,
   TEACHER_REPOSITORY_TOKEN,
@@ -14,9 +16,40 @@ export class TeacherCreate {
     @Inject(TEACHER_REPOSITORY_TOKEN)
     private teacherRepository: TeacherRepository,
   ) {}
-  async execute(
-    teacher: TeacherDTO,
-  ): Promise<FindTeacherResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-    return await this.teacherRepository.createTeacher(teacher);
+  async execute({
+    name,
+    email,
+    phoneNumber,
+    password,
+  }: {
+    name: Name;
+    email: Email;
+    phoneNumber: PhoneNumber;
+    password: Password;
+  }): Promise<void> {
+    const teacher = await this.registerTeacher(
+      name,
+      email,
+      phoneNumber,
+      password,
+    );
+  }
+
+  private async registerTeacher(
+    name: Name,
+    email: Email,
+    phoneNumber: PhoneNumber,
+    password: Password,
+  ) {
+    const teacher = Teacher.create(
+      TeacherValueId.fromString(''),
+      name,
+      email,
+      phoneNumber,
+      password,
+    );
+    if (teacher.hasMockedEmail()) teacher.verifyEmail();
+
+    await this.teacherRepository.createTeacher(teacher);
   }
 }

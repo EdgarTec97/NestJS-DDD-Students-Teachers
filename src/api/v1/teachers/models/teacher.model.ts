@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+/*import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema()
@@ -11,4 +11,4 @@ export class Teacher {
 
 export type TeacherDocument = Teacher & Document;
 
-export const TeacherSchema = SchemaFactory.createForClass(Teacher);
+export const TeacherSchema = SchemaFactory.createForClass(Teacher);*/

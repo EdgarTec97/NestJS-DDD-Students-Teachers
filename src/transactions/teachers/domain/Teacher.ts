@@ -1,61 +1,56 @@
 import { Email } from '../../shared/domain/Email';
 import { PhoneNumber } from '../../shared/domain/PhoneNumber';
-import { StudentValueId } from '../../shared/domain/ids/StudentValueId';
 import { TeacherValueId } from '../../shared/domain/ids/TeacherValueId';
 import { Name } from '../../shared/domain/Name';
 import { Password } from '../../shared/domain/Password';
 import { AggregateRoot } from '../../shared/utils/hex/AggregateRoot';
-import { StudentRegistered } from './events/StudentRegistered';
+import { TeacherRegistered } from './events/TeacherRegistered';
 
-export type StudentPrimitives = ReturnType<Student['toPrimitives']>;
+export type TeacherPrimitives = ReturnType<Teacher['toPrimitives']>;
 
-export class Student extends AggregateRoot {
-  public static fromPrimitives(p: StudentPrimitives): Student {
-    return new Student(
-      new StudentValueId(p.id),
+export class Teacher extends AggregateRoot {
+  public static fromPrimitives(p: TeacherPrimitives): Teacher {
+    return new Teacher(
+      new TeacherValueId(p.id),
       new Name(p.name),
       new Email(p.email),
       new PhoneNumber(p.phoneNumber),
       new Password(p.password),
       p.isEmailVerify,
       p.isPhoneNumberVerify,
-      new TeacherValueId(p.teacherId),
     );
   }
 
   public static create(
-    studentId: StudentValueId,
+    id: TeacherValueId,
     name: Name,
     email: Email,
     phoneNumber: PhoneNumber,
     password: Password,
-    teacherId: TeacherValueId,
-  ): Student {
-    const student = new Student(
-      studentId,
+  ): Teacher {
+    const student = new Teacher(
+      id,
       name,
       email,
       phoneNumber,
       password,
       false,
       false,
-      teacherId,
     );
 
-    student.record(new StudentRegistered(studentId, phoneNumber));
+    student.record(new TeacherRegistered(id, phoneNumber));
 
     return student;
   }
 
   constructor(
-    readonly id: StudentValueId,
+    readonly id: TeacherValueId,
     private name: Name,
     private email: Email,
     private phoneNumber: PhoneNumber,
     private password: Password,
     private isEmailVerify: boolean,
     private isPhoneNumberVerify: boolean,
-    private teacherId: TeacherValueId,
   ) {
     super();
   }
@@ -70,7 +65,7 @@ export class Student extends AggregateRoot {
     this.isPhoneNumberVerify = false;
   }
 
-  hasId(id: StudentValueId) {
+  hasId(id: TeacherValueId) {
     return this.id.equals(id);
   }
 
@@ -84,10 +79,6 @@ export class Student extends AggregateRoot {
 
   verifyEmail() {
     this.isEmailVerify = true;
-  }
-
-  async passwordMatches(password: Password) {
-    return await password.hash(this.password);
   }
 
   emailHasBeenVerify() {
@@ -115,7 +106,6 @@ export class Student extends AggregateRoot {
       password: this.password.getValue(),
       isEmailVerify: this.isEmailVerify,
       isPhoneNumberVerify: this.isPhoneNumberVerify,
-      teacherId: this.teacherId.getValue(),
     };
   }
 }

@@ -1,10 +1,8 @@
-import { HttpStatus } from '@nestjs/common';
-import { authDTO } from '../../../api/v1/auth/dto/auth.dto';
-import { tokenDTO } from '../../../api/v1/auth/dto/token.dto';
-import { FindStudentsResponseDTO } from '../../../api/v1/students/dtos/student.dto';
+import { Email } from '../../shared/domain/Email';
+import { Student } from '../../students/domain/Student';
 
 export const AUTHENTICATE_REPOSITORY_TOKEN = 'AuthenticateRepositoryToken';
 
 export interface AuthenticateRepository {
-  findStudent(user: authDTO): Promise<FindStudentsResponseDTO | undefined>;
+  findOneByEmail(email: Email): Promise<Student>;
 }

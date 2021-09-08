@@ -55,9 +55,19 @@ export let teachers = [
   {
     id: '9c9324e8-b656-11eb-8529-0242ac130003',
     name: 'Ms Jackson',
+    email: 'jackson@gmail.com',
+    phoneNumber: '8341515191',
+    isEmailVerify: true,
+    isPhoneNumberVerify: true,
+    password: 'root123',
   },
   {
     id: '1c250754-b656-11eb-8529-0242ac130006',
     name: 'Mr Wade',
+    email: 'wafe@gmail.com',
+    phoneNumber: '8343113785',
+    isEmailVerify: true,
+    isPhoneNumberVerify: true,
+    password: 'root123',
   },
 ];
