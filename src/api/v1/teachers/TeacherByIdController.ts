@@ -1,11 +1,7 @@
-import {
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
+import { TeacherValueId } from '../../../transactions/shared/domain/ids/TeacherValueId';
+import { Teacher } from '../../../transactions/teachers/domain/Teacher';
 import { TeacherId } from '../../../transactions/teachers/use-cases/teacher-id';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
 import { FindTeacherResponseDTO } from './dtos/teacher.dto';
@@ -29,7 +25,10 @@ export class TeacherByIdController {
   @Get('api/v1/teacher/:teacherId')
   async execute(
     @Param('teacherId') teacherID: string,
-  ): Promise<FindTeacherResponseDTO | HttpStatus.INTERNAL_SERVER_ERROR> {
-    return await this.teacherId.execute(teacherID);
+  ): Promise<FindTeacherResponseDTO> {
+    const teacher: Teacher = await this.teacherId.execute(
+      TeacherValueId.fromString(teacherID),
+    );
+    return FindTeacherResponseDTO.fromDomain(teacher);
   }
 }

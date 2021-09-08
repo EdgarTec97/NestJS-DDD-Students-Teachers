@@ -1,9 +1,11 @@
 import { Controller, Delete, HttpStatus, Param } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
+import { TeacherValueId } from '../../../transactions/shared/domain/ids/TeacherValueId';
 import { STUDENTS } from '../../../transactions/shared/services/jwt/domain/Role';
 import { GuardWithJwt } from '../../../transactions/shared/services/jwt/infrastructure/JwtAuthGuard';
 import { TeacherDelete } from '../../../transactions/teachers/use-cases/teacher-delete';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
+import { StatusResponseDTO } from '../meta/dtos/StatusResponseDTO';
 import { FindTeacherResponseDTO } from './dtos/teacher.dto';
 
 @Controller()
@@ -26,7 +28,9 @@ export class TeacherDeleteController {
   @Delete('api/v1/teacher/:teacherId')
   async execute(
     @Param('teacherId') teacherId: string,
-  ): Promise<string | HttpStatus.INTERNAL_SERVER_ERROR> {
-    return await this.teacherDelete.execute(teacherId);
+  ): Promise<StatusResponseDTO> {
+    await this.teacherDelete.execute(TeacherValueId.fromString(teacherId));
+
+    return StatusResponseDTO.ok();
   }
 }

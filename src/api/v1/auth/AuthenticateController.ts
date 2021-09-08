@@ -1,6 +1,9 @@
 import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
 import { Authenticate } from '../../../transactions/auth/use-cases/authenticate';
+import { Email } from '../../../transactions/shared/domain/Email';
+import { Password } from '../../../transactions/shared/domain/Password';
+import { TokenPair } from '../../../transactions/shared/domain/TokenPair';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
 import { authDTO } from './dto/auth.dto';
 import { tokenDTO } from './dto/token.dto';
@@ -22,8 +25,11 @@ export class AuthenticateController {
     description: 'Email and Password for get JWT',
   })
   @Post('/api/v1/auth')
-  async execute(@Body() user: authDTO): Promise<tokenDTO> {
-    const tokenPair = await this.authenticate.execute(user);
+  async execute(@Body() { email, password }: authDTO): Promise<tokenDTO> {
+    const tokenPair: TokenPair = await this.authenticate.execute(
+      new Email(email),
+      new Password(password),
+    );
 
     return tokenPair.toPrimitives();
   }

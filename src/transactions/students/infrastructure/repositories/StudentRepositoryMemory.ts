@@ -32,6 +32,9 @@ export class StudentRepositoryMemory implements StudentRepository {
     const student = (await this.students.find(
       (student) => student.id === studentId.getValue(),
     )) as StudentPrimitives;
+    if (!student) {
+      throw new NotFoundException('Student Not Found');
+    }
     return Student.fromPrimitives(student);
   }
 
@@ -51,7 +54,6 @@ export class StudentRepositoryMemory implements StudentRepository {
     const updatedStudentList = await this.students.map((student) => {
       if (student.id == studentEntity.id) {
         updatedStudent = {
-          id: studentEntity.id,
           ...studentEntity,
         };
         return updatedStudent;
@@ -72,7 +74,7 @@ export class StudentRepositoryMemory implements StudentRepository {
       }
     });
     if (i == 0) {
-      throw new NotFoundException('No se a encontrado el estudiante');
+      throw new NotFoundException('Student Not Found');
     }
   }
 }

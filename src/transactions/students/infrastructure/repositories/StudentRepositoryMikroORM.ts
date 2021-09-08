@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoConnection, MongoDriver, ObjectId } from '@mikro-orm/mongodb';
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Inject,
@@ -51,7 +52,7 @@ export class StudentRepositoryMikroORM implements StudentRepository {
       .getCollection('students')
       .findOne(new ObjectId(studentId.getValue()))) as StudentPrimitives;
     if (!student) {
-      throw new NotFoundException('No se a encontrado el estudiante');
+      throw new NotFoundException('Student Not Found');
     }
     this.fixCorrectId([student]);
     return Student.fromPrimitives(student);
@@ -64,7 +65,7 @@ export class StudentRepositoryMikroORM implements StudentRepository {
       .getCollection('students')
       .findOne({ email });
     if (user) {
-      throw new HttpException('User Already exist', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('User Already exist');
     }
     studentEntity.password = await bcrypt.hash(password, 10);
     delete studentEntity.id;
@@ -92,16 +93,21 @@ export class StudentRepositoryMikroORM implements StudentRepository {
         .getCollection('students')
         .findOne({ email });
       if (user && user._id != student.id) {
-        throw new HttpException('User Already exist', HttpStatus.BAD_REQUEST);
+        throw new BadRequestException('User Already exist');
       }
     }
+    const id = student.id;
+    delete student.id;
     const result = await this.connection
       .getCollection('students')
       .findOneAndUpdate(
-        { _id: new ObjectId(student.id) },
+        { _id: new ObjectId(id) },
         { $set: { ...student } },
         { returnOriginal: false },
       );
+    if (!result['value']) {
+      throw new NotFoundException('Student Not Found');
+    }
     return Student.fromPrimitives(result['value']);
   }
 
@@ -110,7 +116,7 @@ export class StudentRepositoryMikroORM implements StudentRepository {
       _id: new ObjectId(studentId.getValue()),
     });
     if (studentDelete['affectedRows'] == 0) {
-      throw new NotFoundException('No se a encontrado el estudiante');
+      throw new NotFoundException('Student Not Found');
     }
   }
 
