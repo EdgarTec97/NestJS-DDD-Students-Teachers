@@ -7,8 +7,11 @@ import {
 } from '../../../transactions/shared/services/jwt/domain/JwtService';
 import { Email } from '../../shared/domain/Email';
 import { AccountAuthenticationFailed } from '../../shared/domain/errors/AccountAuthenticationFailed';
+import { TeacherValueId } from '../../shared/domain/ids/TeacherValueId';
 import { Password } from '../../shared/domain/Password';
+import { Role } from '../../shared/domain/Role';
 import { Student } from '../../students/domain/Student';
+import { Teacher } from '../../teachers/domain/Teacher';
 import {
   AuthenticateRepository,
   AUTHENTICATE_REPOSITORY_TOKEN,
@@ -22,15 +25,41 @@ export class Authenticate {
     @Inject(JWT_SERVICE_TOKEN) private readonly jwtService: JwtService,
   ) {}
 
-  async execute(email: Email, password: Password): Promise<TokenPair> {
-    const student: Student = await this.authenticate.findOneByEmail(email);
+  async execute(
+    email: Email,
+    password: Password,
+    role: Role,
+  ): Promise<TokenPair> {
+    switch (role.getValue()) {
+      case 'student':
+        const student: Student = await this.authenticate.findStudentByEmail(
+          email,
+        );
 
-    const passwordVerify = await student.passwordMatches(password);
+        const passwordVerify = await student.passwordMatches(password);
 
-    if (!student || !passwordVerify) throw new AccountAuthenticationFailed();
+        if (!student || !passwordVerify)
+          throw new AccountAuthenticationFailed();
 
-    const userId = StudentValueId.fromString(student.toPrimitives().id);
+        const studentId = StudentValueId.fromString(student.toPrimitives().id);
 
-    return await this.jwtService.createTokenPairForStudent(userId);
+        return await this.jwtService.createTokenPairForStudent(studentId);
+
+      case 'teacher':
+        const teacher: Teacher = await this.authenticate.findTeacherByEmail(
+          email,
+        );
+
+        const teacherVerify = await teacher.passwordMatches(password);
+
+        if (!teacher || !teacherVerify) throw new AccountAuthenticationFailed();
+
+        const teacherId = TeacherValueId.fromString(teacher.toPrimitives().id);
+
+        return await this.jwtService.createTokenPairForTeacher(teacherId);
+
+      default:
+        throw new AccountAuthenticationFailed();
+    }
   }
 }

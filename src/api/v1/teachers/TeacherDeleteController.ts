@@ -1,7 +1,7 @@
 import { Controller, Delete, HttpStatus, Param } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
 import { TeacherValueId } from '../../../transactions/shared/domain/ids/TeacherValueId';
-import { STUDENTS } from '../../../transactions/shared/services/jwt/domain/Role';
+import { TEACHERS } from '../../../transactions/shared/services/jwt/domain/Role';
 import { GuardWithJwt } from '../../../transactions/shared/services/jwt/infrastructure/JwtAuthGuard';
 import { TeacherDelete } from '../../../transactions/teachers/use-cases/teacher-delete';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
@@ -24,7 +24,7 @@ export class TeacherDeleteController {
     required: true,
     description: 'Delete a teacher',
   })
-  @GuardWithJwt(STUDENTS)
+  @GuardWithJwt(TEACHERS)
   @Delete('api/v1/teacher/:teacherId')
   async execute(
     @Param('teacherId') teacherId: string,

@@ -2,8 +2,6 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoConnection, MongoDriver, ObjectId } from '@mikro-orm/mongodb';
 import {
   BadRequestException,
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   NotFoundException,

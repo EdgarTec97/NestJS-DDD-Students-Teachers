@@ -6,6 +6,11 @@ import { TeacherValueId } from '../../../transactions/shared/domain/ids/TeacherV
 import { Name } from '../../../transactions/shared/domain/Name';
 import { Password } from '../../../transactions/shared/domain/Password';
 import { PhoneNumber } from '../../../transactions/shared/domain/PhoneNumber';
+import {
+  STUDENTS,
+  TEACHERS,
+} from '../../../transactions/shared/services/jwt/domain/Role';
+import { GuardWithJwt } from '../../../transactions/shared/services/jwt/infrastructure/JwtAuthGuard';
 import { Student } from '../../../transactions/students/domain/Student';
 import { StudentUpdate } from '../../../transactions/students/use-cases/student-update';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
@@ -33,6 +38,7 @@ export class StudentUpdateController {
     required: true,
     description: 'Update a student',
   })
+  @GuardWithJwt(STUDENTS.concat(TEACHERS))
   @Put('api/v1/student/:studentId')
   async createStudent(
     @Body() { name, email, phoneNumber, password, teacherId }: StudentDTO,

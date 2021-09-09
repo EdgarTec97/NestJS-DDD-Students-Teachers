@@ -9,6 +9,8 @@ import {
 import { ApiQuery } from '@nestjs/swagger';
 import { StudentValueId } from '../../../transactions/shared/domain/ids/StudentValueId';
 import { TeacherValueId } from '../../../transactions/shared/domain/ids/TeacherValueId';
+import { TEACHERS } from '../../../transactions/shared/services/jwt/domain/Role';
+import { GuardWithJwt } from '../../../transactions/shared/services/jwt/infrastructure/JwtAuthGuard';
 import { Student } from '../../../transactions/students/domain/Student';
 import { StudentsPerTeacher } from '../../../transactions/studentsPerTeacher/use-cases/Students-per-teacher';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
@@ -33,6 +35,7 @@ export class StudentsPerTeacherController {
     required: true,
     description: 'Update a student of teacher',
   })
+  @GuardWithJwt(TEACHERS)
   @Put('/api/v1/:studentId/student/:teacherId')
   async execute(
     @Param('studentId') studentId: string,

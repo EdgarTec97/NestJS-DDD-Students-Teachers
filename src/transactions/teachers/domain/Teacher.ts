@@ -81,6 +81,10 @@ export class Teacher extends AggregateRoot {
     this.isEmailVerify = true;
   }
 
+  async passwordMatches(password: Password) {
+    return await password.hash(this.password);
+  }
+
   emailHasBeenVerify() {
     return this.isEmailVerify;
   }
