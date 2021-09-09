@@ -11,6 +11,7 @@ import { JwtService } from '../domain/JwtService';
 import { Role } from '../domain/Role';
 import { AccessToken } from '../domain/tokens/AccessToken';
 import { ResetPasswordRequestToken } from '../domain/tokens/ResetPasswordRequestToken';
+import { TeacherValueId } from '../../../domain/ids/TeacherValueId';
 
 export class JwtServiceNest implements JwtService {
   private jwtNestService = new NestJwtService({
@@ -41,10 +42,12 @@ export class JwtServiceNest implements JwtService {
 
     return new AccessToken(jwt);
   }
-  private async createManager(managerId: ManagerId): Promise<AccessToken> {
+  private async createForTeacher(
+    teacherId: TeacherValueId,
+  ): Promise<AccessToken> {
     const payload = {
-      role: Role.MANAGER,
-      sub: managerId.getValue(),
+      role: Role.TEACHER,
+      sub: teacherId.getValue(),
     };
 
     const jwt = this.jwtNestService.sign(payload, {
@@ -132,9 +135,11 @@ export class JwtServiceNest implements JwtService {
   async decode(jwt: AccessToken): Promise<JwtPayload> {
     return this.jwtNestService.decode(jwt.getValue()) as JwtPayload;
   }
-  async createTokenPairForManager(managerId: ManagerId): Promise<TokenPair> {
-    const accessToken = await this.createManager(managerId);
-    const refreshToken = await this.createRefreshToken(managerId);
+  async createTokenPairForTeacher(
+    teacherId: TeacherValueId,
+  ): Promise<TokenPair> {
+    const accessToken = await this.createForTeacher(teacherId);
+    const refreshToken = await this.createRefreshToken(accessToken);
 
     return new TokenPair(accessToken, refreshToken);
   }

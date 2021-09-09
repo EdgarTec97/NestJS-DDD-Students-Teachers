@@ -12,6 +12,8 @@ import { TeacherValueId } from '../../../transactions/shared/domain/ids/TeacherV
 import { Name } from '../../../transactions/shared/domain/Name';
 import { Password } from '../../../transactions/shared/domain/Password';
 import { PhoneNumber } from '../../../transactions/shared/domain/PhoneNumber';
+import { TEACHERS } from '../../../transactions/shared/services/jwt/domain/Role';
+import { GuardWithJwt } from '../../../transactions/shared/services/jwt/infrastructure/JwtAuthGuard';
 import { Teacher } from '../../../transactions/teachers/domain/Teacher';
 import { TeacherUpdate } from '../../../transactions/teachers/use-cases/teacher-update';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
@@ -39,6 +41,7 @@ export class TeacherUpdateController {
     required: true,
     description: 'Delete a teacher',
   })
+  @GuardWithJwt(TEACHERS)
   @Put('api/v1/teacher/:teacherId')
   async execute(
     @Param('teacherId') teacherId: string,

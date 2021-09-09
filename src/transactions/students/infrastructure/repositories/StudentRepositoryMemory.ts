@@ -1,9 +1,5 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
-import {
-  FindStudentsResponseDTO,
-  StudentDTO,
-} from '../../../../api/v1/students/dtos/student.dto';
 import { StudentRepository } from '../../domain/StudentRepository';
 import { students } from 'src/db';
 import { Student, StudentPrimitives } from '../../domain/Student';

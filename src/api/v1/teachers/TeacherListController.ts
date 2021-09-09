@@ -1,5 +1,7 @@
 import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
+import { TEACHERS } from '../../../transactions/shared/services/jwt/domain/Role';
+import { GuardWithJwt } from '../../../transactions/shared/services/jwt/infrastructure/JwtAuthGuard';
 import { TeacherList } from '../../../transactions/teachers/use-cases/teacher-list';
 import { DocumentationTags, Endpoint } from '../../../utils/Endpoint';
 import { PaginatedTeacherDTO } from './dtos/PaginatedTeacher.dto';
@@ -22,6 +24,7 @@ export class TeacherListController {
     required: false,
     description: 'Get teachers',
   })
+  @GuardWithJwt(TEACHERS)
   @Get('api/v1/teachers')
   async execute(
     @Query('offset') offset?: number,

@@ -28,9 +28,9 @@ async function bootstrap() {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'Manager JWT',
+        description: 'Teacher JWT',
       },
-      DocumentationRoles.MANAGER_JWT,
+      DocumentationRoles.TEACHER_JWT,
     )
     .build();
 
