@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      [
+        synchronize,
+        opened,
+        reopened,
+        ready_for_review,
+        review_request_removed,
+        review_requested,
+        converted_to_draft
+      ]
+
+jobs:
+  skip-draft:
+    name: skip draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: fail on draft
+        if: github.event.pull_request.draft == true
+        run: echo "is a draft PR, failing..." && exit 1
+      - name: success
+        run: echo "is not a draft PR"
+
+  tests:
+    needs: skip-draft
+    name: Test
+    runs-on: ubuntu-latest
+    # it should be node:lts-alpine but fixes: /bin/tar: unrecognized option: posix
+    # https://stackoverflow.com/questions/64184839/github-actions-cachev2-unrecognized-option-posix-in-the-post-job
+    container: node:lts
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.6
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v1
+        with:
+          envkey_PROJECT_NAME: carrier-service
+          envkey_PROJECT_MODE: development
+          envkey_SERVER_HOSTNAME: localhost
+          envkey_SERVER_PORT: 8000
+          envkey_SWAGGER_IS_PUBLIC: true
+          envkey_SWAGGER_HTML_ENDPOINT: /swagger-html
+          envkey_SWAGGER_JSON_ENDPOINT: /swagger-json
+          envkey_JWT_SECRET_KEY: shhhh
+          envkey_MONGODB_HOSTNAME: localhost
+          envkey_MONGODB_PORT: 27014
+          envkey_MONGODB_USERNAME: root
+          envkey_MONGODB_PASSWORD: root
+          envkey_MONGODB_DATABASE: carrier-service-dev
+          envkey_EVENT_BUS_RABBITMQ_HOSTNAME: localhost
+          envkey_EVENT_BUS_RABBITMQ_PORT: 5670
+          envkey_EVENT_BUS_RABBITMQ_USERNAME: guest
+          envkey_EVENT_BUS_RABBITMQ_PASSWORD: guest
+          envkey_EVENT_BUS_RABBITMQ_QUEUE: event.bus.queue
+          envkey_EVENT_BUS_RABBITMQ_EXCHANGE: event.bus.exchange
+          envkey_EVENT_BUS_RABBITMQ_RETRIES: 5
+          envkey_EVENT_BUS_RABBITMQ_INTERVAL: 1000
+          file_name: .env
+      - name: Verify envfile
+        run: cat .env
+      - name: Run the containers
+        run: docker-compose up -d
+      # - name: Tests
+      #   run: yarn test
